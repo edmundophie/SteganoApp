@@ -5,11 +5,19 @@
  */
 package steganoapp.core;
 
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -17,6 +25,7 @@ import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -24,8 +33,6 @@ import java.util.logging.Logger;
  */
 public class StandardLSB implements Stegano{
     private File messageFile;
-    private int messageSize;
-    private int maxMessageSize;
     private File coverObject;
     private String stegoKey;
     private int seed=0;
@@ -33,7 +40,6 @@ public class StandardLSB implements Stegano{
     @Override
     public void setCoverObject(File imageFile) {
         coverObject = imageFile;
-        maxMessageSize = (int) (imageFile.length()/8);
     }
 
     @Override
@@ -45,13 +51,12 @@ public class StandardLSB implements Stegano{
 
     @Override
     public int getMaxMsgSize() {
-        return maxMessageSize;
+        return (int)messageFile.length()/8;
     }
 
     @Override
     public void setMessage(File messageFile) {
         this.messageFile = messageFile;
-        this.messageSize = (int) messageFile.length();
     }
 
     public static byte[] convertFile2Bytes(File file) throws IOException {
@@ -76,50 +81,62 @@ public class StandardLSB implements Stegano{
     
     @Override
     public File getSteganoObject() {
-        // Dapatkan array of byte dari messageFile dan coverObjectFile
-        byte[] messageData = null;
-        byte[] coverObjData = null;
+        BufferedImage coverImage;
+        BufferedImage stegoImage = null;
         try {
-            messageData = convertFile2Bytes(messageFile);
-            coverObjData = convertFile2Bytes(coverObject);
-        } catch (IOException ex) {
-            System.out.println("Error: convertFile2Bytes fail. " + ex);
-        }
-        
-        String msgBits = getBits(messageData);
-        String coverBits = getBits(coverObjData);
-        StringBuilder stegoBits = new StringBuilder(coverBits);
-        ArrayList<Integer> usedIdx = new ArrayList<Integer>();
-        
-        // Sisipkan bit pesan ke bit cover
-        for(int i=0;i<msgBits.length();++i) {
-            // Generate random index
-            Random rand = new Random(seed);
-            int idx;
-            do {
-                idx = rand.nextInt(maxMessageSize+1)+1; // 1 <= idx <= maxMessageSize
-            } while(usedIdx.contains(idx));
-            usedIdx.add(idx);
+            coverImage = ImageIO.read(coverObject);
             
-            stegoBits.setCharAt(idx*8-1, msgBits.charAt(i));
+            // Configure stegoImage attributes
+            stegoImage = new BufferedImage(coverImage.getWidth(), coverImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            Graphics2D graphics = stegoImage.createGraphics();
+            graphics.drawRenderedImage(coverImage, null);
+            graphics.dispose();
+        } catch (IOException ex) {
+            System.out.println("Error on processing cover file. " + ex);
         }
         
-        // Convert stegoBits ke bytes
-        short a = Short.parseShort(stegoBits.toString(), 2);
-        ByteBuffer b = ByteBuffer.allocate(2).putShort(a);
-        byte[] stegoData = b.array();
+        // Get image byte[]
+        WritableRaster raster = stegoImage.getRaster();
+        DataBufferByte buffer= (DataBufferByte) raster.getDataBuffer();
+        byte stegoData[] = buffer.getData();
         
-        // Convert stegoBits ke file
-        File stegoFile = new File("tempStego", ".tmp");
-        FileOutputStream out;
+        // Get message byte[]
+        byte msgData[] = null;
         try {
-            out = new FileOutputStream(stegoFile);
-            out.write(stegoData);
-            out.close();
-        } catch (Exception ex) {
-            System.out.println("Error: problem on writing stegoFile.");
+             msgData = Files.readAllBytes(messageFile.toPath());
+        } catch (IOException ex) {
+            System.out.println("Error on processing message file. " + ex);
+        }
+        
+        // Get message length in byte[]
+        byte msgLen[] = new byte[]{0,0,0, (byte)(msgData.length & 0x000000FF)};
+        
+        // Insert msgLen[] into stegoData[]
+        insertMessage(stegoData, msgLen, 0);
+        
+        // Insert msgData[] into stegoData[]
+        insertMessage(stegoData, msgData, 32);
+        
+        // Convert image to file
+        File stegoFile = new File("stegoTemp");
+        try {
+            stegoFile.delete();
+            ImageIO.write(stegoImage, "jpg", stegoFile);
+        } catch (IOException ex) {
+            System.out.println("Error on creating image file. " + ex);
         }
         
         return stegoFile;
+    }
+    
+    private byte[] insertMessage(byte[] imgData, byte[] msgData, int offset) {
+        for(int i=0;i<msgData.length;++i) {
+            int msg = msgData[i];
+            for(int j=7;j>=0;--j, ++offset) {
+                int b = (msg >>> j) & 1;
+                imgData[offset] = (byte) ((imgData[offset] & 0xFE) | b);
+            }
+        }
+        return imgData;
     }
 }

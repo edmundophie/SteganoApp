@@ -355,14 +355,13 @@ public class SteganoAppUI extends javax.swing.JFrame {
                 stdLSB.setMessage(messageFile);
                 stdLSB.setCoverObject(coverImgFile);
                 stdLSB.setKey(stegoKey);
-//                File stegoImgFile = stdLSB.getSteganoObject();
+                File stegoImgFile = stdLSB.getSteganoObject();
                 
-                File stegoImgFile = messageFile; // Dummy data stego image
                 try {
                     CoverImageWindow coverWindow = new CoverImageWindow(coverImgFile);
                     StegoImageWindow stegoWindow = new StegoImageWindow(stegoImgFile);
                 } catch (IOException ex) {
-                    System.out.println("Couldn't load image.");
+                    System.out.println("Couldn't load image. " + ex);
                 }
             } 
             else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
