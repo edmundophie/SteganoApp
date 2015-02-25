@@ -5,42 +5,51 @@
  */
 package steganoapp.core;
 
+import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  *
  * @author edmundophie
  */
 public class StandardLSB implements Stegano{
-    private byte[] message;
+    private File messageFile;
     private int messageSize;
     private File coverObject;
     private String stegoKey;
     
     @Override
-    public void setCoverObject(File image) {
-        
+    public void setCoverObject(File imageFile) {
+        coverObject = imageFile;
     }
 
     @Override
     public void setKey(String key) {
-        
-    }
-
-    @Override
-    public void setMessage(byte[] message) {
-        
+        stegoKey = key;
     }
 
     @Override
     public int getMaxMsgSize() {
-        
-        return 0;
+        return messageSize;
     }
 
     @Override
-    public void steganoObject(String filename, String filepath) {
-        
+    public void setMessage(File messageFile) {
+        this.messageFile = messageFile;
+        this.messageSize = (int) messageFile.length();
+    }
+
+    public static byte[] convertFile2Bytes(File file) throws IOException {
+        byte[] data;
+        data = Files.readAllBytes(file.toPath());
+        return data;
     }
     
+    @Override
+    public File getSteganoObject() {
+        File stegoObj = null;
+        return stegoObj;
+    }
 }

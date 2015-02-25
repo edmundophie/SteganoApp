@@ -15,5 +15,6 @@ public interface DeStegano {
        void setCoverObject(File cover);
        void setKey(String key);
        void setMsgSize(int size);
-       void deSteganoObject(String filename, String filepath);
+       void setStegoObject(File stegoObj);
+       File deSteganoObject();
 }

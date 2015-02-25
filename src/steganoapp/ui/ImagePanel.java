@@ -25,7 +25,7 @@ public class ImagePanel extends JPanel{
         Dimension size = new Dimension(img.getWidth(null), img.getHeight(null));
         setPreferredSize(size);
         setMinimumSize(size);
-        setMaximumSize(size);
+        setMaximumSize(new Dimension(1024,768));
         setSize(size);
         setLayout(null);
     }

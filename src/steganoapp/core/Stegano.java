@@ -14,7 +14,7 @@ import java.io.File;
 public interface Stegano {
     void setCoverObject(File image);
     void setKey(String key);
-    void setMessage(byte[] message);
+    void setMessage(File messageFile);
     int getMaxMsgSize();
-    void steganoObject(String filename, String filepath);
+    File getSteganoObject();
 }
