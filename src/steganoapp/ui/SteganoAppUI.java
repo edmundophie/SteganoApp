@@ -7,8 +7,13 @@ package steganoapp.ui;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.ImageObserver;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +24,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import steganoapp.core.StandardLSB;
+import steganoapp.core.vigenereChiperExtended;
 
 /**
  *
@@ -483,6 +489,36 @@ public class SteganoAppUI extends javax.swing.JFrame {
                 new SteganoAppUI().setVisible(true);
             }
         });
+    }
+    
+    public byte[] Encrypt (byte[] plaintext, String key) {  
+        StringBuilder sb = new StringBuilder();
+        for (byte b : plaintext) {
+            sb.append((char)b);
+        }
+
+        vigenereChiperExtended chpr = new vigenereChiperExtended();
+        chpr.isAutoKey = false;
+        chpr.key = key;
+
+        String plainTextString = sb.toString();
+        String chiperTextString = chpr.encrypt(plainTextString);
+        return chiperTextString.getBytes();
+    }
+    
+    public byte[] Decrypt (byte[] chipertext, String key) {  
+        StringBuilder sb = new StringBuilder();
+        for (byte b : chipertext) {
+            sb.append((char)b);
+        }
+
+        vigenereChiperExtended chpr = new vigenereChiperExtended();
+        chpr.isAutoKey = false;
+        chpr.key = key;
+
+        String chiperTextString = sb.toString();
+        String plainTextString = chpr.encrypt(chiperTextString);
+        return chiperTextString.getBytes();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
