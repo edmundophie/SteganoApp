@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Stack;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,7 @@ public class StandardLSB implements Stegano{
     private String stegoKey;
     private ArrayList<Integer> usedIdx = new ArrayList<Integer>();
     private Random rand;
+    private Stack<Integer> randomStack;
     
     @Override
     public void setCoverObject(File imageFile) {
@@ -113,6 +115,20 @@ public class StandardLSB implements Stegano{
         
         // Get message length in byte[]
         byte msgLen[] = new byte[]{(byte)((msgData.length & 0xFF000000) >>> 24 ),(byte)((msgData.length & 0x00FF0000) >>> 16),(byte)((msgData.length & 0x0000FF00) >>> 8), (byte)(msgData.length & 0x000000FF)};
+                
+        // Generate random list
+        int randomList[] = new int [stegoData.length];
+        for (int i = 0; i < randomList.length; i++)
+            randomList[i] = i;
+        for (int i = randomList.length - 1; i > 0; i--) {
+                int n = Math.abs(rand.nextInt()) % i;
+                int temp = randomList[i];
+                randomList[i] = randomList[n];
+                randomList[n] = temp;            
+        }
+        randomStack = new Stack<Integer>();
+        for(int i=0; i<randomList.length; ++i)
+            randomStack.push(randomList[i]);
         
         // Insert msgLen[] into stegoData[]
         insertMessage(stegoData, msgLen);
@@ -136,14 +152,8 @@ public class StandardLSB implements Stegano{
         for(int i=0;i<msgData.length;++i) {
             int msg = msgData[i];
             for(int j=7;j>=0;--j) {
-                
-                // Generate offset
-                int offset;
-                do{
-                    offset = rand.nextInt(getMaxMsgSize())+1;
-                } while(usedIdx.contains(offset));
-                usedIdx.add(offset);
-                
+                // Get offset
+                int offset = randomStack.pop();
                 // Insert message
                 int b = (msg >>> j) & 1;
                 imgData[offset] = (byte) ((imgData[offset] & 0xFE) | b);

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -29,7 +30,7 @@ public class StandardLSBDeStegano implements DeStegano{
     private int msgSize;
     private File stegoFile;
     private Random rand;
-    private ArrayList<Integer> usedIdx = new ArrayList<Integer>();
+    private Stack<Integer> randomStack;
 
     @Override
     public void setCoverObject(File cover) {
@@ -62,6 +63,7 @@ public class StandardLSBDeStegano implements DeStegano{
     
     @Override
     public File deSteganoObject() {
+        // Get stegano data
         BufferedImage stegoImage;
         byte[] stegoData = null;
         try {
@@ -73,22 +75,31 @@ public class StandardLSBDeStegano implements DeStegano{
             Logger.getLogger(StandardLSBDeStegano.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        // Make random list
+        int randomList[] = new int [stegoData.length];
+        for (int i = 0; i < randomList.length; i++)
+            randomList[i] = i;
+        for (int i = randomList.length - 1; i > 0; i--) {
+                int n = Math.abs(rand.nextInt()) % i;
+                int temp = randomList[i];
+                randomList[i] = randomList[n];
+                randomList[n] = temp;            
+        }
+        randomStack = new Stack<Integer>();
+        for(int i=0; i<randomList.length; ++i)
+            randomStack.push(randomList[i]);
+        
+        // Get message bit
         int length=0;
         int offset;
         for(int i=0;i<32;++i) {
-            do{ //todo key salah hang
-                offset = rand.nextInt(getMaxMessageSize())+1;
-            }while(usedIdx.contains(offset));
-            usedIdx.add(offset);
+            offset = randomStack.pop();
             length = (length<<1) | (stegoData[offset]&1);
         }
         byte[] result = new byte[length];
         for(int idxByte=0; idxByte<length;++idxByte){
             for(int bit=0;bit<8;++bit) {
-                do{
-                    offset = rand.nextInt(getMaxMessageSize())+1;
-                }while(usedIdx.contains(offset));
-                usedIdx.add(offset);
+                offset = randomStack.pop();
                 result[idxByte] = (byte)((result[idxByte]<<1) | (stegoData[offset]&1));
             }
         }
