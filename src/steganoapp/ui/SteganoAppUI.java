@@ -23,7 +23,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+import steganoapp.core.DeStegano;
+import steganoapp.core.FourPixelDiffrenceDeStegano;
+import steganoapp.core.FourPixelDiffrenceStegano;
 import steganoapp.core.StandardLSB;
+import steganoapp.core.StandardLSBDeStegano;
+import steganoapp.core.Stegano;
 import steganoapp.core.vigenereChiperExtended;
 
 /**
@@ -32,11 +37,18 @@ import steganoapp.core.vigenereChiperExtended;
  */
 public class SteganoAppUI extends javax.swing.JFrame {
 
+    private Stegano st;
+    
+    private DeStegano dst;
+    private File extractedMessage;
     /**
      * Creates new form SteganoAppUI
      */
     public SteganoAppUI() {
         initComponents();
+        jButton6.setVisible(false);
+        st = new StandardLSB();
+        dst = new StandardLSBDeStegano();
     }
 
     /**
@@ -51,6 +63,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
         jFileChooser1 = new javax.swing.JFileChooser();
         jFileChooser2 = new javax.swing.JFileChooser();
         jFileChooser3 = new javax.swing.JFileChooser();
+        jFileChooser4 = new javax.swing.JFileChooser();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
@@ -76,7 +89,6 @@ public class SteganoAppUI extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
         jButton6 = new javax.swing.JButton();
-        jLabel16 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
@@ -223,8 +235,6 @@ public class SteganoAppUI extends javax.swing.JFrame {
 
         jLabel10.setText("Metode");
 
-        jTextField3.setText("jTextField1");
-
         jButton6.setText("Simpan...");
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -232,15 +242,13 @@ public class SteganoAppUI extends javax.swing.JFrame {
             }
         });
 
-        jLabel16.setText("File berhasil diesktrak");
-
         jTextArea2.setEditable(false);
         jTextArea2.setBackground(new java.awt.Color(55, 55, 55));
         jTextArea2.setColumns(20);
         jTextArea2.setForeground(new java.awt.Color(204, 204, 204));
         jTextArea2.setLineWrap(true);
         jTextArea2.setRows(5);
-        jTextArea2.setText("Note:\n");
+        jTextArea2.setText("\n");
         jScrollPane2.setViewportView(jTextArea2);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -264,12 +272,9 @@ public class SteganoAppUI extends javax.swing.JFrame {
                                 .addGap(12, 12, 12)
                                 .addComponent(jButton3))
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jButton6))
                                 .addComponent(jTextField3, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jComboBox2, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(jComboBox2, javax.swing.GroupLayout.Alignment.LEADING, 0, 306, Short.MAX_VALUE))
+                            .addComponent(jButton6))
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -278,7 +283,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton3)
@@ -297,14 +302,12 @@ public class SteganoAppUI extends javax.swing.JFrame {
                                 .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel16)
-                                    .addComponent(jButton6)))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton6))))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Extract", jPanel2);
@@ -355,56 +358,106 @@ public class SteganoAppUI extends javax.swing.JFrame {
             jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
         }    
         else {
+            jTextArea1.append("Message size : " + messageFile.length() + " byte\n");
             // Standard LSB
-            if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
-                StandardLSB stdLSB = new StandardLSB();
-                stdLSB.setMessage(messageFile);
-                stdLSB.setCoverObject(coverImgFile);
-                stdLSB.setKey(stegoKey);
-                File stegoImgFile = stdLSB.getSteganoObject();
-                
-                try {
-                    CoverImageWindow coverWindow = new CoverImageWindow(coverImgFile);
-                    StegoImageWindow stegoWindow = new StegoImageWindow(stegoImgFile);
-                } catch (IOException ex) {
-                    System.out.println("Couldn't load image. " + ex);
-                }
-            } 
-            else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
-                // 4-Pixel Differencing  
-            }
-            else {
-                // 9-Pixel Differencing
+            st.setMessage(messageFile);
+            st.setCoverObject(coverImgFile);
+            st.setKey(stegoKey);
+            File stegoImgFile = st.getSteganoObject();
+
+            try {
+                CoverImageWindow coverWindow = new CoverImageWindow(coverImgFile);
+                StegoImageWindow stegoWindow = new StegoImageWindow(stegoImgFile);
+            } catch (IOException ex) {
+                System.out.println("Couldn't load image. " + ex);
             }
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         // TODO add your handling code here:
+        if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
+            st = new StandardLSB();
+        } 
+        else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
+            // 4-Pixel Differencing  
+            st = new FourPixelDiffrenceStegano();
+        }
+        else {
+            // 9-Pixel Differencing
+        }
+        File messageFile = jFileChooser1.getSelectedFile();
+        File coverFile = jFileChooser2.getSelectedFile();
+        jTextArea1.setText("");
+
+        // Check file size
+        if (messageFile != null) 
+            jTextArea1.append("Message size : " + messageFile.length() + " byte\n");
+        if(coverFile!=null) {
+            long maxMessageSize = coverFile.length()/8;
+            jTextArea1.append("Cover size : " + coverFile.length() + " byte\n");
+            st.setCoverObject(coverFile);
+            jTextArea1.append("Max. message size : " + st.getMaxMsgSize() + " byte\n");
+            if(messageFile != null)
+            if (messageFile.length()>maxMessageSize)
+                jTextArea1.append("Error: Message file is too big.");
+        }
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
-        // TODO add your handling code here:
+        if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
+            dst = new StandardLSBDeStegano();
+        } 
+        else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
+            // 4-Pixel Differencing  
+            dst = new FourPixelDiffrenceDeStegano();
+        }
+        else {
+            // 9-Pixel Differencing
+        }           
     }//GEN-LAST:event_jComboBox2ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
+        String stegoKey = jTextField3.getText();
+        File stegoFile = jFileChooser3.getSelectedFile();
+        System.out.println(stegoFile.getName());
+        dst.setKey(stegoKey);
+        dst.setStegoObject(stegoFile);
+        extractedMessage = dst.deSteganoObject();
+        jTextArea2.setText("Pesan berhasil diekstrak");
+        jButton6.setVisible(true);
+        
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        
+        int returnVal = jFileChooser4.showSaveDialog(this);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+            try {
+                // Dapatkan lokasi save
+                String path = jFileChooser4.getSelectedFile().getAbsolutePath();
+                File messageFile = new File(path);
+                
+                // Baca semua byte stegoImage
+                byte[] data = StandardLSB.convertFile2Bytes(extractedMessage);
+                
+                // Tulis semua byte stegoImage ke sebuah file di lokasi save
+                FileOutputStream out;
+                out = new FileOutputStream(messageFile);
+                out.write(data);
+                out.close();
+            } catch (IOException ex) {
+                System.out.println("Error processing file." + ex);
+            }
+        } else {
+            System.out.println("File access cancelled by user.");
+        }        
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         int returnVal = jFileChooser3.showOpenDialog(this);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
             File file = jFileChooser3.getSelectedFile();
-            try{
-                jLabel3.setText(file.getName());
-                jTextArea2.read(new FileReader(file.getAbsolutePath()), null);
-            } catch (IOException ex) {
-                System.out.println("Problem accessing file " + file);
-            }
+            jLabel14.setText(file.getName());
         } else {
             System.out.println("File access cancelled by user.");
         }
@@ -423,7 +476,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
             if(coverFile!=null) {
                 long maxMessageSize = coverFile.length()/8;
                 jTextArea1.append("Cover size : " + coverFile.length() + " byte\n");
-                jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
+                jTextArea1.append("Max. message size : " + st.getMaxMsgSize() + " byte\n");
                 if(messageFile.length()>maxMessageSize)
                     jTextArea1.append("Error: Message file is too big.");
             }
@@ -438,13 +491,13 @@ public class SteganoAppUI extends javax.swing.JFrame {
             File messageFile = jFileChooser1.getSelectedFile();
             File coverFile = jFileChooser2.getSelectedFile();
             jLabel4.setText(coverFile.getName());
-            
+            st.setCoverObject(coverFile);
             // Check file size
             long maxMessageSize = coverFile.length()/8;
             jTextArea1.setText(null);
                         
             jTextArea1.append("Cover size : " + coverFile.length() + " byte\n");
-            jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
+            jTextArea1.append("Max. message size : " + st.getMaxMsgSize() + " byte\n");
             
             if(messageFile!=null) {
                 jTextArea1.insert("Message size : " + messageFile.length() + " byte\n", 0);
@@ -533,11 +586,11 @@ public class SteganoAppUI extends javax.swing.JFrame {
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JFileChooser jFileChooser2;
     private javax.swing.JFileChooser jFileChooser3;
+    private javax.swing.JFileChooser jFileChooser4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

@@ -35,7 +35,8 @@ public class StandardLSB implements Stegano{
     private File messageFile;
     private File coverObject;
     private String stegoKey;
-    private int seed=0;
+    private ArrayList<Integer> usedIdx = new ArrayList<Integer>();
+    private Random rand;
     
     @Override
     public void setCoverObject(File imageFile) {
@@ -45,13 +46,16 @@ public class StandardLSB implements Stegano{
     @Override
     public void setKey(String key) {
         stegoKey = key;
+        int seed = 0;
         for(int i=0;i<key.length();++i)
             seed += (int)key.charAt(i);
+        
+        rand = new Random(seed);
     }
 
     @Override
     public int getMaxMsgSize() {
-        return (int)messageFile.length()/8;
+        return (int)coverObject.length()/8;
     }
 
     @Override
@@ -95,7 +99,6 @@ public class StandardLSB implements Stegano{
             System.out.println("Error on processing cover file. " + ex);
         }
         
-        // Get image byte[]
         WritableRaster raster = stegoImage.getRaster();
         DataBufferByte buffer= (DataBufferByte) raster.getDataBuffer();
         byte stegoData[] = buffer.getData();
@@ -109,19 +112,19 @@ public class StandardLSB implements Stegano{
         }
         
         // Get message length in byte[]
-        byte msgLen[] = new byte[]{0,0,0, (byte)(msgData.length & 0x000000FF)};
+        byte msgLen[] = new byte[]{(byte)((msgData.length & 0xFF000000) >>> 24 ),(byte)((msgData.length & 0x00FF0000) >>> 16),(byte)((msgData.length & 0x0000FF00) >>> 8), (byte)(msgData.length & 0x000000FF)};
         
         // Insert msgLen[] into stegoData[]
-        insertMessage(stegoData, msgLen, 0);
+        insertMessage(stegoData, msgLen);
         
         // Insert msgData[] into stegoData[]
-        insertMessage(stegoData, msgData, 32);
+        insertMessage(stegoData, msgData);
         
         // Convert image to file
         File stegoFile = new File("stegoTemp");
         try {
             stegoFile.delete();
-            ImageIO.write(stegoImage, "jpg", stegoFile);
+            ImageIO.write(stegoImage, "bmp", stegoFile);
         } catch (IOException ex) {
             System.out.println("Error on creating image file. " + ex);
         }
@@ -129,10 +132,19 @@ public class StandardLSB implements Stegano{
         return stegoFile;
     }
     
-    private byte[] insertMessage(byte[] imgData, byte[] msgData, int offset) {
+    private byte[] insertMessage(byte[] imgData, byte[] msgData) {
         for(int i=0;i<msgData.length;++i) {
             int msg = msgData[i];
-            for(int j=7;j>=0;--j, ++offset) {
+            for(int j=7;j>=0;--j) {
+                
+                // Generate offset
+                int offset;
+                do{
+                    offset = rand.nextInt(getMaxMsgSize())+1;
+                } while(usedIdx.contains(offset));
+                usedIdx.add(offset);
+                
+                // Insert message
                 int b = (msg >>> j) & 1;
                 imgData[offset] = (byte) ((imgData[offset] & 0xFE) | b);
             }
