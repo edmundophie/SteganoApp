@@ -51,7 +51,7 @@ public class StandardLSB implements Stegano{
 
     @Override
     public int getMaxMsgSize() {
-        return (int)messageFile.length()/8;
+        return (int)coverObject.length()/8;
     }
 
     @Override
@@ -121,7 +121,7 @@ public class StandardLSB implements Stegano{
         File stegoFile = new File("stegoTemp");
         try {
             stegoFile.delete();
-            ImageIO.write(stegoImage, "jpg", stegoFile);
+            ImageIO.write(stegoImage, "bmp", stegoFile);
         } catch (IOException ex) {
             System.out.println("Error on creating image file. " + ex);
         }

@@ -23,7 +23,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+import steganoapp.core.FourPixelDiffrenceDeStegano;
+import steganoapp.core.FourPixelDiffrenceStegano;
 import steganoapp.core.StandardLSB;
+import steganoapp.core.Stegano;
 import steganoapp.core.vigenereChiperExtended;
 
 /**
@@ -32,11 +35,13 @@ import steganoapp.core.vigenereChiperExtended;
  */
 public class SteganoAppUI extends javax.swing.JFrame {
 
+    private Stegano st;
     /**
      * Creates new form SteganoAppUI
      */
     public SteganoAppUI() {
         initComponents();
+        st = new StandardLSB();
     }
 
     /**
@@ -355,32 +360,50 @@ public class SteganoAppUI extends javax.swing.JFrame {
             jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
         }    
         else {
+            jTextArea1.append("Message size : " + messageFile.length() + " byte\n");
             // Standard LSB
-            if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
-                StandardLSB stdLSB = new StandardLSB();
-                stdLSB.setMessage(messageFile);
-                stdLSB.setCoverObject(coverImgFile);
-                stdLSB.setKey(stegoKey);
-                File stegoImgFile = stdLSB.getSteganoObject();
-                
-                try {
-                    CoverImageWindow coverWindow = new CoverImageWindow(coverImgFile);
-                    StegoImageWindow stegoWindow = new StegoImageWindow(stegoImgFile);
-                } catch (IOException ex) {
-                    System.out.println("Couldn't load image. " + ex);
-                }
-            } 
-            else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
-                // 4-Pixel Differencing  
-            }
-            else {
-                // 9-Pixel Differencing
+            st.setMessage(messageFile);
+            st.setCoverObject(coverImgFile);
+            st.setKey(stegoKey);
+            File stegoImgFile = st.getSteganoObject();
+
+            try {
+                CoverImageWindow coverWindow = new CoverImageWindow(coverImgFile);
+                StegoImageWindow stegoWindow = new StegoImageWindow(stegoImgFile);
+            } catch (IOException ex) {
+                System.out.println("Couldn't load image. " + ex);
             }
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         // TODO add your handling code here:
+        if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
+            st = new StandardLSB();
+        } 
+        else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
+            // 4-Pixel Differencing  
+            st = new FourPixelDiffrenceStegano();
+        }
+        else {
+            // 9-Pixel Differencing
+        }
+        File messageFile = jFileChooser1.getSelectedFile();
+        File coverFile = jFileChooser2.getSelectedFile();
+        jTextArea1.setText("");
+
+        // Check file size
+        if (messageFile != null) 
+            jTextArea1.append("Message size : " + messageFile.length() + " byte\n");
+        if(coverFile!=null) {
+            long maxMessageSize = coverFile.length()/8;
+            jTextArea1.append("Cover size : " + coverFile.length() + " byte\n");
+            st.setCoverObject(coverFile);
+            jTextArea1.append("Max. message size : " + st.getMaxMsgSize() + " byte\n");
+            if(messageFile != null)
+            if (messageFile.length()>maxMessageSize)
+                jTextArea1.append("Error: Message file is too big.");
+        }
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
@@ -423,7 +446,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
             if(coverFile!=null) {
                 long maxMessageSize = coverFile.length()/8;
                 jTextArea1.append("Cover size : " + coverFile.length() + " byte\n");
-                jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
+                jTextArea1.append("Max. message size : " + st.getMaxMsgSize() + " byte\n");
                 if(messageFile.length()>maxMessageSize)
                     jTextArea1.append("Error: Message file is too big.");
             }
@@ -438,13 +461,13 @@ public class SteganoAppUI extends javax.swing.JFrame {
             File messageFile = jFileChooser1.getSelectedFile();
             File coverFile = jFileChooser2.getSelectedFile();
             jLabel4.setText(coverFile.getName());
-            
+            st.setCoverObject(coverFile);
             // Check file size
             long maxMessageSize = coverFile.length()/8;
             jTextArea1.setText(null);
                         
             jTextArea1.append("Cover size : " + coverFile.length() + " byte\n");
-            jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
+            jTextArea1.append("Max. message size : " + st.getMaxMsgSize() + " byte\n");
             
             if(messageFile!=null) {
                 jTextArea1.insert("Message size : " + messageFile.length() + " byte\n", 0);
