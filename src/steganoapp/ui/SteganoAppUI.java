@@ -359,9 +359,20 @@ public class SteganoAppUI extends javax.swing.JFrame {
             jTextArea1.append("Max. message size : " + maxMessageSize + " byte\n");
         }    
         else {
-            jTextArea1.append("Message size : " + messageFile.length() + " byte\n");
+            File encryptedMessage = new File("EncryptedMessage");
+            try {
+                encryptedMessage.delete();
+                byte[] encrypted = Encrypt(Files.readAllBytes(messageFile.toPath()),stegoKey);
+                FileOutputStream output = new FileOutputStream(encryptedMessage);
+                output.write(encrypted);
+                output.close();
+            } catch (IOException ex) {
+                Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
+                return;
+            }
             // Standard LSB
-            st.setMessage(messageFile);
+            st.setMessage(encryptedMessage);
             st.setCoverObject(coverImgFile);
             st.setKey(stegoKey);
             File stegoImgFile = st.getSteganoObject();
@@ -556,7 +567,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
         });
     }
     
-    public byte[] Encrypt (byte[] plaintext, String key) {  
+    public static byte[] Encrypt (byte[] plaintext, String key) {  
         StringBuilder sb = new StringBuilder();
         for (byte b : plaintext) {
             sb.append((char)b);
@@ -568,10 +579,15 @@ public class SteganoAppUI extends javax.swing.JFrame {
 
         String plainTextString = sb.toString();
         String chiperTextString = chpr.encrypt(plainTextString);
-        return chiperTextString.getBytes();
+        sb = new StringBuilder(chiperTextString);
+        byte r[] = new byte [sb.length()];
+        for (int i = 0; i < sb.length(); i++) {
+            r[i] = (byte) ((int)sb.charAt(i));
+        }
+        return r;
     }
     
-    public byte[] Decrypt (byte[] chipertext, String key) {  
+    public static byte[] Decrypt (byte[] chipertext, String key) {  
         StringBuilder sb = new StringBuilder();
         for (byte b : chipertext) {
             sb.append((char)b);
@@ -582,8 +598,13 @@ public class SteganoAppUI extends javax.swing.JFrame {
         chpr.key = key;
 
         String chiperTextString = sb.toString();
-        String plainTextString = chpr.encrypt(chiperTextString);
-        return chiperTextString.getBytes();
+        String plainTextString = chpr.decrypt(chiperTextString);
+        sb = new StringBuilder(plainTextString);
+        byte r[] = new byte [sb.length()];
+        for (int i = 0; i < sb.length(); i++) {
+            r[i] = (byte) ((int)sb.charAt(i));
+        }
+        return r;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
