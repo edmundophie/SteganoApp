@@ -26,6 +26,7 @@ import javax.swing.JFileChooser;
 import steganoapp.core.DeStegano;
 import steganoapp.core.FourPixelDiffrenceDeStegano;
 import steganoapp.core.FourPixelDiffrenceStegano;
+import steganoapp.core.PSNR;
 import steganoapp.core.StandardLSB;
 import steganoapp.core.StandardLSBDeStegano;
 import steganoapp.core.Stegano;
@@ -364,12 +365,23 @@ public class SteganoAppUI extends javax.swing.JFrame {
             st.setCoverObject(coverImgFile);
             st.setKey(stegoKey);
             File stegoImgFile = st.getSteganoObject();
-
+            
+            // Tampilkan gambar di window baru
             try {
                 CoverImageWindow coverWindow = new CoverImageWindow(coverImgFile);
                 StegoImageWindow stegoWindow = new StegoImageWindow(stegoImgFile);
             } catch (IOException ex) {
                 System.out.println("Couldn't load image. " + ex);
+            }
+            // Hitung PSNR
+            PSNR psnr = new PSNR();
+            psnr.setImage(coverImgFile, stegoImgFile);
+            jTextArea1.setText(("Message embedded success!\n"));
+            jTextArea1.append(("-------------------------\n"));
+            try {
+                jTextArea1.append("PSNR : " + psnr.getPSNR());
+            } catch (IOException ex) {
+                System.out.println("Failed to load image file. " + ex);
             }
         }
     }//GEN-LAST:event_jButton2ActionPerformed
