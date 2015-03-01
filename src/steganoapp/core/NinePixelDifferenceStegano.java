@@ -23,6 +23,7 @@ import javax.imageio.ImageIO;
  */
 public class NinePixelDifferenceStegano implements Stegano {
     private int X[][][];
+    private int Xori[][][];
     private BufferedImage cover;
     private String msg;
     private File coverFile;
@@ -34,12 +35,16 @@ public class NinePixelDifferenceStegano implements Stegano {
             coverFile = image;
             cover = ImageIO.read(image);
              X = new int[3][cover.getWidth()][cover.getHeight()];
+             Xori = new int[3][cover.getWidth()][cover.getHeight()];
         for(int i=0; i<X[0].length; i++) {
             for(int j=0; j<X[0][0].length; j++) {
                 Color c = new Color(cover.getRGB(i, j));
                 X[0][i][j] = c.getRed();
+                Xori[0][i][j] = c.getRed();
                 X[1][i][j] = c.getGreen();
+                Xori[1][i][j] = c.getGreen();
                 X[2][i][j] = c.getBlue();
+                Xori[2][i][j] = c.getBlue();
             }
         }
         } catch (IOException ex) {
@@ -127,9 +132,7 @@ public class NinePixelDifferenceStegano implements Stegano {
                 binaryMsg.delete(0, bit[color] * 8);
             }
             msgSubsitutionN(iterX, iterY, color, blockMsg, bit[color]);
-//            if(msg.length() < 5) {
-//                lanjut = false;
-//            }
+            adjustment(color, iterX, iterY, bit[color]);
             
             if(binaryMsg.length() == 0) lanjut = false;
             color++;
@@ -280,6 +283,32 @@ public class NinePixelDifferenceStegano implements Stegano {
             msg = sb.toString();
         } catch (IOException ex) {
             Logger.getLogger(NinePixelDifferenceStegano.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void adjustment (int color, int x, int y, int nLSB) {
+        int i = x;
+        while(i < x+3) {
+            int j = y;
+            while(j < y+3) {
+                if(X[color][i][j] >= (Xori[color][i][j] + (int) Math.pow(2, (nLSB-1)) + 1)) {
+                    X[color][i][j] -= (int) Math.pow(2, nLSB);
+                } else if(X[color][i][j] <= (Xori[color][i][j] - (int) Math.pow(2, (nLSB-1)) + 1)) {
+                    X[color][i][j] += (int) Math.pow(2, nLSB);
+                } else {
+                    // nilai x[color][x][y] tidak perlu di adjustment
+                }
+                
+                // cek boundary {0, 255}
+                if(X[color][i][j] < 0) {
+                    X[color][i][j] += (int) Math.pow(2, nLSB);
+                } else if(X[color][i][j] > 255) {
+                    X[color][i][j] -= (int) Math.pow(2, nLSB);
+                }
+                
+                j++;
+            }
+            i++;
         }
     }
     
