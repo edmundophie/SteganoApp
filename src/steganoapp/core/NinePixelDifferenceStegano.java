@@ -229,14 +229,21 @@ public class NinePixelDifferenceStegano implements Stegano {
             int j = koorY;
             while((j<koorY+3) && !habis) {
                 if(i!=koorX+2 || j!=koorY+2) {
+                    String sub = null;
                     if (nLSB > sisa.length()) {
-                        nLSB = sisa.length();
+                        sub = sisa.substring(0, sisa.length());
+                        for (int k = sub.length(); k < nLSB; k++)
+                            sub = sub + "0";
+                        sisa.delete(0, sisa.length());
                     }
-                    String sub = sisa.substring(0, nLSB);
-                    sisa.delete(0, nLSB);
+                    else {
+                        sub = sisa.substring(0, nLSB);
+                        sisa.delete(0, nLSB);
+                    }
                     if (sisa.length() == 0) {
                         habis = true;
                     }
+                    
                     int msgBit = Integer.parseInt(sub, 2); 
                     if(nLSB == 1) {
                         X[color][i][j] &= 0xFE; 

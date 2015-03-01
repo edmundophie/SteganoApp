@@ -382,8 +382,8 @@ public class SteganoAppUI extends javax.swing.JFrame {
                 return;
             }
             // Standard LSB
-            st.setMessage(encryptedMessage);
             st.setCoverObject(coverImgFile);
+            st.setMessage(encryptedMessage);
             st.setKey(stegoKey);
             File stegoImgFile = st.getSteganoObject();
             
@@ -461,49 +461,50 @@ public class SteganoAppUI extends javax.swing.JFrame {
         dst.setStegoObject(stegoFile);
         byte[] msgLen;
         try {
-            msgLen = Files.readAllBytes(dst.deSteganoObject().toPath());
-            } 
+        msgLen = Files.readAllBytes(dst.deSteganoObject().toPath());
+        }
         catch (IOException ex) {
-            Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
-            return;
+        Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+        return;
         }
         int msgLength = 0;
         for (int i = 0; i < 4; i++){
-            msgLength += ((msgLen[i] & 0xFF) << (i * 8));
+        msgLength += ((msgLen[i] & 0xFF) << (i * 8));
         }
-        dst.setMsgSize(4 + msgLength);
-        dst.setKey(stegoKey);
+        System.out.println(msgLength);
         dst.setStegoObject(stegoFile);
+        dst.setKey(stegoKey);
+        dst.setMsgSize(4+ msgLength);
         File compositeMessage = dst.deSteganoObject();
         File encryptedMessage = new File("encMess");
         try{
-            encryptedMessage.delete();
-            FileOutputStream out = new FileOutputStream(encryptedMessage);
-            byte[] compositeData = Files.readAllBytes(compositeMessage.toPath());
-            byte[] encryptedData = new byte[compositeData.length - 4];
-            for (int i = 0; i < encryptedData.length; i++)
-                encryptedData[i] = compositeData[i+4];
-            out.write(encryptedData);
-            out.close();
+        encryptedMessage.delete();
+        FileOutputStream out = new FileOutputStream(encryptedMessage);
+        byte[] compositeData = Files.readAllBytes(compositeMessage.toPath());
+        byte[] encryptedData = new byte[compositeData.length - 4];
+        for (int i = 0; i < encryptedData.length; i++)
+        encryptedData[i] = compositeData[i+4];
+        out.write(encryptedData);
+        out.close();
         }
         catch (Exception ex) {
-            Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
-            jTextArea2.setText("Pesan tidak berhasil diextrak");
-            return;
+        Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+        jTextArea2.setText("Pesan tidak berhasil diextrak");
+        return;
         }
         {
-            try {
-                FileOutputStream output = new FileOutputStream(extractedMessage);
-                output.write(Decrypt(Files.readAllBytes(encryptedMessage.toPath()), stegoKey));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
-                jTextArea2.setText("Pesan tidak berhasil diekstrak");
-                return;
-            } catch (IOException ex) {
-                Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
-                jTextArea2.setText("Pesan tidak berhasil diekstrak");
-                return;
-            }
+        try {
+        FileOutputStream output = new FileOutputStream(extractedMessage);
+        output.write(Decrypt(Files.readAllBytes(encryptedMessage.toPath()), stegoKey));
+        } catch (FileNotFoundException ex) {
+        Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+        jTextArea2.setText("Pesan tidak berhasil diekstrak");
+        return;
+        } catch (IOException ex) {
+        Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+        jTextArea2.setText("Pesan tidak berhasil diekstrak");
+        return;
+        }
         }
         jTextArea2.setText("Pesan berhasil diekstrak");
         jButton6.setVisible(true);
