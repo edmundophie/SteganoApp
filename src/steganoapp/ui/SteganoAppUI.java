@@ -344,7 +344,6 @@ public class SteganoAppUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         File messageFile = jFileChooser1.getSelectedFile();
         File coverImgFile = jFileChooser2.getSelectedFile();
@@ -365,8 +364,15 @@ public class SteganoAppUI extends javax.swing.JFrame {
             try {
                 encryptedMessage.delete();
                 byte[] encrypted = Encrypt(Files.readAllBytes(messageFile.toPath()),stegoKey);
+                byte[] msgLen = new byte[4];
+                for (int i = 0; i < 4; i++){
+                msgLen[i] = (byte)((encrypted.length >> (i*8)) & (0xFF));
+                }
+                byte[] composite = new byte[msgLen.length + encrypted.length];
+                System.arraycopy(msgLen, 0, composite, 0, msgLen.length);
+                System.arraycopy(encrypted, 0, composite, msgLen.length, encrypted.length);
                 FileOutputStream output = new FileOutputStream(encryptedMessage);
-                output.write(encrypted);
+                output.write(composite);
                 output.close();
             } catch (IOException ex) {
                 Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -446,15 +452,45 @@ public class SteganoAppUI extends javax.swing.JFrame {
         String stegoKey = jTextField3.getText();
         File stegoFile = jFileChooser3.getSelectedFile();
         System.out.println(stegoFile.getName());
-        dst.setMsgSize(1500);
+        dst.setMsgSize(4);
         dst.setKey(stegoKey);
         dst.setStegoObject(stegoFile);
-        File encryptedMessage = dst.deSteganoObject();
-        
+        byte[] msgLen;
+        try {
+            msgLen = Files.readAllBytes(dst.deSteganoObject().toPath());
+            } 
+        catch (IOException ex) {
+            Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+        int msgLength = 0;
+        for (int i = 0; i < 4; i++){
+            msgLength += ((msgLen[i] & 0xFF) << (i * 8));
+        }
+        dst.setMsgSize(4 + msgLength);
+        dst.setKey(stegoKey);
+        dst.setStegoObject(stegoFile);
+        File compositeMessage = dst.deSteganoObject();
+        File encryptedMessage = new File("encMess");
+        try{
+            encryptedMessage.delete();
+            FileOutputStream out = new FileOutputStream(encryptedMessage);
+            byte[] compositeData = Files.readAllBytes(compositeMessage.toPath());
+            byte[] encryptedData = new byte[compositeData.length - 4];
+            for (int i = 0; i < encryptedData.length; i++)
+                encryptedData[i] = compositeData[i+4];
+            out.write(encryptedData);
+            out.close();
+        }
+        catch (Exception ex) {
+            Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+            jTextArea2.setText("Pesan tidak berhasil diextrak");
+            return;
+        }
         {
             try {
                 FileOutputStream output = new FileOutputStream(extractedMessage);
-                output.write(Decrypt(Files.readAllBytes(encryptedMessage.toPath()), jTextField3.getText()));
+                output.write(Decrypt(Files.readAllBytes(encryptedMessage.toPath()), stegoKey));
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
                 jTextArea2.setText("Pesan tidak berhasil diekstrak");

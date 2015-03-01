@@ -112,9 +112,6 @@ public class StandardLSB implements Stegano{
         } catch (IOException ex) {
             System.out.println("Error on processing message file. " + ex);
         }
-        
-        // Get message length in byte[]
-        byte msgLen[] = new byte[]{(byte)((msgData.length & 0xFF000000) >>> 24 ),(byte)((msgData.length & 0x00FF0000) >>> 16),(byte)((msgData.length & 0x0000FF00) >>> 8), (byte)(msgData.length & 0x000000FF)};
                 
         // Generate random list
         int randomList[] = new int [stegoData.length];
@@ -129,9 +126,6 @@ public class StandardLSB implements Stegano{
         randomStack = new Stack<Integer>();
         for(int i=0; i<randomList.length; ++i)
             randomStack.push(randomList[i]);
-        
-        // Insert msgLen[] into stegoData[]
-        insertMessage(stegoData, msgLen);
         
         // Insert msgData[] into stegoData[]
         insertMessage(stegoData, msgData);

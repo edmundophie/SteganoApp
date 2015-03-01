@@ -90,12 +90,8 @@ public class StandardLSBDeStegano implements DeStegano{
             randomStack.push(randomList[i]);
         
         // Get message bit
-        int length=0;
+        int length=msgSize;
         int offset;
-        for(int i=0;i<32;++i) {
-            offset = randomStack.pop();
-            length = (length<<1) | (stegoData[offset]&1);
-        }
         byte[] result = new byte[length];
         for(int idxByte=0; idxByte<length;++idxByte){
             for(int bit=0;bit<8;++bit) {
