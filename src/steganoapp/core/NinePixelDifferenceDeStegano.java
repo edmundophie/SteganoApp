@@ -70,12 +70,10 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
             for(int i=0; i<randomList.length; ++i)
                 randomStack.push(randomList[i]);
         }
-        /*while(lanjut) {
+        while(lanjut) {
         int rand = randomStack.pop();
         koorX = (rand / (X[0][0].length/3)) * 3;
-        int koorY = (rand % (X[0][0].length/3)) * 3;*/
-        for (koorX = 0; lanjut; koorX+=3)
-            for (int koorY = 0; koorY+2 < X[0][0].length && lanjut; koorY+=3) {
+        int koorY = (rand % (X[0][0].length/3)) * 3;
                         int color=0;
                         while(color<3 && lanjut) {
                             int group = getGroup(koorX, koorY, color);

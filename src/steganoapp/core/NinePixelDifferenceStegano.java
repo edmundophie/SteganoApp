@@ -103,12 +103,10 @@ public class NinePixelDifferenceStegano implements Stegano {
             for(int i=0; i<randomList.length; ++i)
                 randomStack.push(randomList[i]);
         }
-        /*while(lanjut) {
+        while(lanjut) {
         int rand = randomStack.pop();
         iterX = (rand / (X[0][0].length/3)) * 3;
-        int iterY = (rand % (X[0][0].length/3)) * 3;*/
-        for (iterX = 0; lanjut; iterX+=3)
-            for (int iterY = 0; iterY+2 < X[0][0].length && lanjut; iterY+=3) {
+        int iterY = (rand % (X[0][0].length/3)) * 3;
                 int color = 0;
                 while(color < 3 && lanjut) {
                 //hitung PVD
