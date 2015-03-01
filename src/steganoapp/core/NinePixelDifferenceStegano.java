@@ -103,10 +103,12 @@ public class NinePixelDifferenceStegano implements Stegano {
             for(int i=0; i<randomList.length; ++i)
                 randomStack.push(randomList[i]);
         }
-        while(lanjut) {
-            int rand = randomStack.pop();
-            iterX = (rand / (X[0][0].length/3)) * 3;
-            int iterY = (rand % (X[0][0].length/3)) * 3;
+        /*while(lanjut) {
+        int rand = randomStack.pop();
+        iterX = (rand / (X[0][0].length/3)) * 3;
+        int iterY = (rand % (X[0][0].length/3)) * 3;*/
+        for (iterX = 0; lanjut; iterX+=3)
+            for (int iterY = 0; iterY+2 < X[0][0].length && lanjut; iterY+=3) {
                 int color = 0;
                 while(color < 3 && lanjut) {
                 //hitung PVD
@@ -271,9 +273,9 @@ public class NinePixelDifferenceStegano implements Stegano {
     
     public static String stringToBinary(String str) {
         StringBuilder binary = new StringBuilder();
-        for (byte b : str.getBytes())
+        for (char b : str.toCharArray())
         {
-            binary.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
+            binary.append(String.format("%8s", Integer.toBinaryString((byte)b & 0xFF)).replace(' ', '0'));
 //            binary.append(" ");
         }
         return binary.toString();        

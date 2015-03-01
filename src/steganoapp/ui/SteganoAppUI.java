@@ -367,6 +367,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
                 encryptedMessage.delete();
                 byte[] encrypted = Encrypt(Files.readAllBytes(messageFile.toPath()),stegoKey);
                 byte[] msgLen = new byte[4];
+                System.out.println(encrypted.length);
                 for (int i = 0; i < 4; i++){
                 msgLen[i] = (byte)((encrypted.length >> (i*8)) & (0xFF));
                 }
@@ -376,6 +377,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
                 FileOutputStream output = new FileOutputStream(encryptedMessage);
                 output.write(composite);
                 output.close();
+                for (int i = 0; i < 4; i++) System.out.println(composite[i]);
             } catch (IOException ex) {
                 Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
                 ex.printStackTrace();

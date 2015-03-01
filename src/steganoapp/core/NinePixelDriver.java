@@ -28,7 +28,7 @@ public class NinePixelDriver {
             File test = new File("coba");
             byte[] msgLen = new byte[4];
             for (int i = 0; i < 4; i++){
-            msgLen[i] = (byte)((93000 >> (i*8)) & (0xFF));
+            msgLen[i] = (byte)((1267 >> (i*8)) & (0xFF));
                 System.out.println(msgLen[i]);
             }
             FileOutputStream output = new FileOutputStream(test);
