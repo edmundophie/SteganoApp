@@ -71,7 +71,7 @@ public class NinePixelDifferenceStegano implements Stegano {
                 }
             }
         }
-        return sum;
+        return sum/8;
     }
 
     @Override
