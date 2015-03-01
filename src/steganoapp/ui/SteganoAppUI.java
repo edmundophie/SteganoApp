@@ -13,6 +13,7 @@ import java.awt.image.ImageObserver;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -50,6 +51,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
         jButton6.setVisible(false);
         st = new StandardLSB();
         dst = new StandardLSBDeStegano();
+        extractedMessage = new File("exMessage");
     }
 
     /**
@@ -428,10 +430,10 @@ public class SteganoAppUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
-        if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
+        if(jComboBox2.getSelectedItem().toString().equalsIgnoreCase("Standard")) {
             dst = new StandardLSBDeStegano();
         } 
-        else if(jComboBox1.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
+        else if(jComboBox2.getSelectedItem().toString().equalsIgnoreCase("4-Pixel Differencing")) {
             // 4-Pixel Differencing  
             dst = new FourPixelDiffrenceDeStegano();
         }
@@ -444,9 +446,25 @@ public class SteganoAppUI extends javax.swing.JFrame {
         String stegoKey = jTextField3.getText();
         File stegoFile = jFileChooser3.getSelectedFile();
         System.out.println(stegoFile.getName());
+        dst.setMsgSize(1500);
         dst.setKey(stegoKey);
         dst.setStegoObject(stegoFile);
-        extractedMessage = dst.deSteganoObject();
+        File encryptedMessage = dst.deSteganoObject();
+        
+        {
+            try {
+                FileOutputStream output = new FileOutputStream(extractedMessage);
+                output.write(Decrypt(Files.readAllBytes(encryptedMessage.toPath()), jTextField3.getText()));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+                jTextArea2.setText("Pesan tidak berhasil diekstrak");
+                return;
+            } catch (IOException ex) {
+                Logger.getLogger(SteganoAppUI.class.getName()).log(Level.SEVERE, null, ex);
+                jTextArea2.setText("Pesan tidak berhasil diekstrak");
+                return;
+            }
+        }
         jTextArea2.setText("Pesan berhasil diekstrak");
         jButton6.setVisible(true);
         

@@ -1,0 +1,48 @@
+DATA DICTIONARY
+
+pengaduan = id_pengaduan + kategori + tanggal + email_pengadu + gambar 
+			+ isi + status + id_taman + id_pihak_berwenang
+
+id_pengaduan = *numeric, id unik untuk setiap pengaduan*
+
+kategori = *kategori pengaduan*
+
+tanggal = *date, tanggal pengaduan di kirim*
+
+email_pengadu = *string, dalam format email, berisi email pengadu*
+
+gambar = *gambar, gambar situasi pengaduan*
+
+isi = *string, isi pengaduan*
+
+status = [proses | belum ditanggapi | selesai | spam] *status pengaduan*
+
+id_taman = *numeric, id unik untuk setiap taman*
+
+id_pihak_berwenang = *numeric, id unik untuk setiap pihak berwenang*
+
+taman = id_taman + nama_taman + lokasi
+
+nama_taman = *string, nama dari taman*
+
+lokasi = *string, lokasi dari taman*
+
+pihak_berwenang = kontak + id_pihak_berwenang + nama + username + password
+
+kontak = *string, kontak yang bisa di hubungi*
+
+nama = *string , nama seseorang*
+
+username = *string, username akun*
+
+password = *string, password akun*
+
+admin = id_admin + username + password
+
+id_admin = *numeric, id unik untuk setiap admin*
+
+progres = id_progres + tanggal + deskripsi_proges + id_pengaduan
+
+id_progres = *numeric, id unik untuk setiap progeres*
+
+deskripsi_proges = *string, deskripsi progres*
