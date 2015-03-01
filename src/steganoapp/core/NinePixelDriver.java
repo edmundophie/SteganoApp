@@ -19,19 +19,19 @@ public class NinePixelDriver {
      */
     public static void main(String[] args) {
         {
-            File image = new File("D:\\lena.bmp");
+            File image = new File("D:\\Kuliah\\image\\coba.bmp");
             NinePixelDifferenceStegano st = new NinePixelDifferenceStegano();
             st.setCoverObject(image);
-//            st.setKey("Willojklads");
-            st.setMessage(new File("D:\\input.txt"));
-            System.out.println(st.getMaxMsgSize());
+            st.setKey("WillojkladsJOl");
+            st.setMessage(new File("D:\\Kuliah\\image\\data store.txt"));
             st.getSteganoObject();
         }
         {
-            File image = new File("D:\\lenaS.bmp");
+            File image = new File("stegObj");
             NinePixelDifferenceDeStegano st = new NinePixelDifferenceDeStegano();
             st.setStegoObject(image);
-            st.setMsgSize(50);
+            st.setKey("WillojkladsJOl");
+            st.setMsgSize(1267);
             st.deSteganoObject();
         }
     }

@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Random;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -25,6 +27,7 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
     BufferedImage cover;
     StringBuffer msgTemp;
     StringBuffer msg;
+    String key;
     
     @Override
     public void setCoverObject(File cover) {
@@ -33,7 +36,7 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
 
     @Override
     public void setKey(String key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.key = key;
     }
 
     @Override
@@ -44,32 +47,45 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
     @Override
     public File deSteganoObject() {
         msgTemp = new StringBuffer();
-        int iter = 0;
         int koorX=0;
         boolean lanjut = true;
+        Stack<Integer> randomStack = null;
         
-            while(koorX<X.length && lanjut) {
-                int koorY=0;
-                while(koorY<X[0].length && lanjut) {
-                    if(koorX!=koorX+3 || koorY!=koorY+3) {
+        {
+            int seed = 0;
+            for(int i=0;i<key.length();++i)
+                seed += (int)key.charAt(i);
+            Random rand = new Random(seed);
+            
+            int randomList[] = new int [(X[0].length/3) * (X[0][0].length/3)];
+            for (int i = 0; i < randomList.length; i++)
+                randomList[i] = i;
+            for (int i = randomList.length - 1; i > 0; i--) {
+                    int n = Math.abs(rand.nextInt()) % i;
+                    int temp = randomList[i];
+                    randomList[i] = randomList[n];
+                    randomList[n] = temp;            
+            }
+            randomStack = new Stack<Integer>();
+            for(int i=0; i<randomList.length; ++i)
+                randomStack.push(randomList[i]);
+        }
+            while(lanjut) {
+                int rand = randomStack.pop();
+                koorX = (rand / (X[0][0].length/3)) * 3;
+                int koorY = (rand % (X[0][0].length/3)) * 3;
                         int color=0;
                         while(color<3 && lanjut) {
                             int group = getGroup(koorX, koorY, color);
                             getBitMsg(koorX, koorY, color, group);
                             //get
                             color++;
-                            iter++;
-                            if(iter>size) lanjut = false;
+                            if(msgTemp.length()/8 >= size) lanjut = false;
                         }
-                    }
-                    koorY++;
-                }
-                koorX++;
             }
-            
         msgInto8Bit();
         
-        File output = new File("D:\\output.txt");
+        File output = new File("deStegoMessage");
         try {
             output.delete();
             FileOutputStream outputStream = new FileOutputStream(output);
@@ -104,9 +120,8 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
     public int getGroup(int x, int y, int color) {
         int d = 0;
         
-        for(int k=0; k<3; k++) {
-            d = X[k][x+3][y+3] & 3;
-        }
+        d = X[color][x+2][y+2] & 3;
+        
         return d;
     }
      
@@ -114,16 +129,20 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
         int nLSB = nSubsitutionLSB(group); 
         for(int i=x; i <x+3; i++) {
             for(int j=y; j<y+3; j++) {
-                if(i==x+3 && j==y+3) {
+                if(i==x+2 && j==y+2) {
                     //TODO ganti kalau stegano diperbaik untuk kasus pixel 9
                 }
                 else {
                     int bitmask = 0;
-                    for (int i1 = 0; i1 < nLSB; i1++) bitmask = (bitmask << 1) + 1;
+                    if (nLSB == 1) bitmask = 0x01;
+                    else if (nLSB == 2) bitmask = 3;
+                    else if (nLSB == 3) bitmask = 7;
+                    else if (nLSB == 4) bitmask = 15;
+                    else if (nLSB == 5) bitmask = 31;
                     int message = X[color][i][j] & bitmask;
                     for (int i1 = nLSB - 1; i1 >= 0; i1--)
-                        if (((message >> i1) & 1) == 0) msgTemp.append('1');
-                        else msgTemp.append('0');
+                        if (((message >> i1) & 1) == 0) msgTemp.append('0');
+                        else msgTemp.append('1');
                 }
             }
         }
@@ -144,18 +163,14 @@ public class NinePixelDifferenceDeStegano implements DeStegano {
     
     public void msgInto8Bit() {
         msg = new StringBuffer();
-        if(msgTemp.length()%8 != 0) {
-            int iter = 8-(msgTemp.length()%8);
-            for(int i=0; i<iter; i++) {
-                msgTemp.insert(0, "0");
-            }
-        }
-        while(msgTemp.length() > 8) {
-            String karakterString = msgTemp.substring(0, 7);
+        int msgLeft = size;
+        while(msgLeft > 0) {
+            String karakterString = msgTemp.substring(0, 8);
             int karakterInt = Integer.parseInt(karakterString, 2);
             char karakter = (char) karakterInt;
             msg.append(karakter);
-            msgTemp.delete(0, 7);
+            msgTemp.delete(0, 8);
+            msgLeft--;
         }
         // msgTemp.length < 8
     } 

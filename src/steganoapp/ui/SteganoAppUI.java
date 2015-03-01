@@ -27,6 +27,8 @@ import javax.swing.JFileChooser;
 import steganoapp.core.DeStegano;
 import steganoapp.core.FourPixelDiffrenceDeStegano;
 import steganoapp.core.FourPixelDiffrenceStegano;
+import steganoapp.core.NinePixelDifferenceDeStegano;
+import steganoapp.core.NinePixelDifferenceStegano;
 import steganoapp.core.PSNR;
 import steganoapp.core.StandardLSB;
 import steganoapp.core.StandardLSBDeStegano;
@@ -415,6 +417,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
             st = new FourPixelDiffrenceStegano();
         }
         else {
+            st = new NinePixelDifferenceStegano();
             // 9-Pixel Differencing
         }
         File messageFile = jFileChooser1.getSelectedFile();
@@ -445,6 +448,7 @@ public class SteganoAppUI extends javax.swing.JFrame {
         }
         else {
             // 9-Pixel Differencing
+            dst = new NinePixelDifferenceDeStegano();
         }           
     }//GEN-LAST:event_jComboBox2ActionPerformed
 

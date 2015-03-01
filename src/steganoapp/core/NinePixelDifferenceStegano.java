@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Random;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -24,6 +26,7 @@ public class NinePixelDifferenceStegano implements Stegano {
     private BufferedImage cover;
     private String msg;
     private File coverFile;
+    private String key;
     
     @Override
     public void setCoverObject(File image) {
@@ -46,7 +49,7 @@ public class NinePixelDifferenceStegano implements Stegano {
 
     @Override
     public void setKey(String key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.key = key;
     }
 
     @Override
@@ -68,20 +71,39 @@ public class NinePixelDifferenceStegano implements Stegano {
 
     @Override
     public File getSteganoObject() {
-        File new_f = new File("D://lenaS.bmp");
-        String binaryMsg = stringToBinary(msg);
+        File new_f = new File("stegObj");
+        StringBuffer binaryMsg = new StringBuffer(stringToBinary(msg));
 //        
         int iterX = 0;
         int[] d = new int[3];
         boolean lanjut = true;
-           
-        int sisaPixX = X.length % 3;
-        int sisaPixY = X[0].length % 3;
-        while((iterX<X.length-sisaPixX) && lanjut) {
-            int iterY = 0;
-            while((iterY<X[0].length-sisaPixY) && lanjut) {
+        Stack<Integer> randomStack = null;
+        
+        {
+            int seed = 0;
+            for(int i=0;i<key.length();++i)
+                seed += (int)key.charAt(i);
+            Random rand = new Random(seed);
+            
+            int randomList[] = new int [(X[0].length/3) * (X[0][0].length/3)];
+            for (int i = 0; i < randomList.length; i++)
+                randomList[i] = i;
+            for (int i = randomList.length - 1; i > 0; i--) {
+                    int n = Math.abs(rand.nextInt()) % i;
+                    int temp = randomList[i];
+                    randomList[i] = randomList[n];
+                    randomList[n] = temp;            
+            }
+            randomStack = new Stack<Integer>();
+            for(int i=0; i<randomList.length; ++i)
+                randomStack.push(randomList[i]);
+        }
+        while(lanjut) {
+            int rand = randomStack.pop();
+            iterX = (rand / (X[0][0].length/3)) * 3;
+            int iterY = (rand % (X[0][0].length/3)) * 3;
                 int color = 0;
-                while(color < 3) {
+                while(color < 3 && lanjut) {
                 //hitung PVD
             
             d[color] = PDV(color, iterX,iterY);
@@ -91,21 +113,27 @@ public class NinePixelDifferenceStegano implements Stegano {
             bit[color] = nSubsitutionLSB(group(d[color]));
 //
 //            //menyisipikan kelompok di bit 7th dan 8th
-            X[color][iterX+3][iterY+3] >>= 2;
-            X[color][iterX+3][iterY+3] <<= 2;
-            X[color][iterX+3][iterY+3] += group(d[color]);
+            X[color][iterX+2][iterY+2] >>= 2;
+            X[color][iterX+2][iterY+2] <<= 2;
+            X[color][iterX+2][iterY+2] += group(d[color]);
 //
-            msg = msgSubsitutionN(0, 0, binaryMsg, bit[color]);
+            String blockMsg = null;
+            if (binaryMsg.length() < bit[color]*8) {
+                blockMsg = binaryMsg.substring(0, binaryMsg.length());
+                binaryMsg.delete(0, binaryMsg.length());
+            }
+            else {
+                blockMsg = binaryMsg.substring(0, bit[color] * 8);
+                binaryMsg.delete(0, bit[color] * 8);
+            }
+            msgSubsitutionN(iterX, iterY, color, blockMsg, bit[color]);
 //            if(msg.length() < 5) {
 //                lanjut = false;
 //            }
             
-            if(msg.length() < 2) lanjut = false;
+            if(binaryMsg.length() == 0) lanjut = false;
             color++;
                 }
-                iterY+=3;
-            }
-            iterX+=3;
         }
   
             BufferedImage new_img = cover;
@@ -121,6 +149,7 @@ public class NinePixelDifferenceStegano implements Stegano {
                 
 //            }
         try {
+            new_f.delete();
             ImageIO.write(new_img,"bmp",new_f);
         } catch (IOException ex) {
             Logger.getLogger(NinePixelDifferenceStegano.class.getName()).log(Level.SEVERE, null, ex);
@@ -189,52 +218,52 @@ public class NinePixelDifferenceStegano implements Stegano {
         return bit;
     }
     
-    public String msgSubsitutionN(int koorX, int koorY, String msgBinary, int nLSB) {
-        String sisa = msgBinary;
+    public void msgSubsitutionN(int koorX, int koorY, int color, String msgBinary, int nLSB) {
+        StringBuffer sisa = new StringBuffer(msgBinary);
         int i = koorX;
         boolean habis = false;
-        while((i<=koorX+3) && !habis) {
+        while((i<koorX+3) && !habis) {
             int j = koorY;
-            while((j<=koorY+3) && !habis) {
-                if(koorX!=koorX+3 || koorY!=koorY+3) {
-                    String sub = msgBinary.substring(0, nLSB);
-                    int msgBit = Integer.parseInt(sub, 2); 
-                    int color = 0;
-                    while(color < 3) {
-                        if(nLSB == 2) {
-                            X[color][koorX][koorY] &= 0xFC; 
-                            X[color][koorX][koorY] += msgBit;
-                        } else if(nLSB == 3) {
-                            X[color][koorX][koorY] &= 0xF8;  
-                            X[color][koorX][koorY] += msgBit;
-                        } else if(nLSB == 4) {
-                            X[color][koorX][koorY] &= 0xF0;  
-                            X[color][koorX][koorY] += msgBit;
-                        } else {
-                            X[color][koorX][koorY] &= 0xE0;  
-                            X[color][koorX][koorY] += msgBit;
-                        }
-                        color++;
-                        if(sisa.length() < nLSB)
-                            habis = true;
+            while((j<koorY+3) && !habis) {
+                if(i!=koorX+2 || j!=koorY+2) {
+                    if (nLSB > sisa.length()) {
+                        nLSB = sisa.length();
                     }
+                    String sub = sisa.substring(0, nLSB);
+                    sisa.delete(0, nLSB);
+                    if (sisa.length() == 0) {
+                        habis = true;
+                    }
+                    int msgBit = Integer.parseInt(sub, 2); 
+                    if(nLSB == 1) {
+                        X[color][i][j] &= 0xFE; 
+                        X[color][i][j] += msgBit;
+                    } else if(nLSB == 2) {
+                        X[color][i][j] &= 0xFC; 
+                        X[color][i][j] += msgBit;
+                    } else if(nLSB == 3) {
+                        X[color][i][j] &= 0xF8;  
+                        X[color][i][j] += msgBit;
+                    } else if(nLSB == 4) {
+                        X[color][i][j] &= 0xF0;  
+                        X[color][i][j] += msgBit;
+                    } else {
+                        X[color][i][j] &= 0xE0;  
+                        X[color][i][j] += msgBit;
+                    }
+                    
                 }
                 j++;
             }
             i++;
         }
-        return sisa;
     }
     
     public static String stringToBinary(String str) {
-        byte[] bytes = str.getBytes();
         StringBuilder binary = new StringBuilder();
-        for (byte b : bytes)
+        for (byte b : str.getBytes())
         {
-           if((int)b < 127)
-                binary.append("0");
-           
-            binary.append(Integer.toBinaryString((int) b));
+            binary.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
 //            binary.append(" ");
         }
         return binary.toString();        
